@@ -1,13 +1,13 @@
 # Divine
 
-## Master Build Status
+### Master Build Status
 [![travis-master](https://api.travis-ci.org/turtlecoin/turtlecoin-wallet-nodejs.svg?branch=master)
 
-## Development Build Status
+### Development Build Status
 
-[![travis-dev](https://api.travis-ci.org/turtlecoin/turtlecoin-wallet-nodejs.svg?branch=development)
+![travis-dev](https://api.travis-ci.org/turtlecoin/turtlecoin-wallet-nodejs.svg?branch=development)
 
-[![NPM](https://nodei.co/npm/divinewallet.png?compact=true)](https://npmjs.org/package/divinewallet)
+![NPM](https://nodei.co/npm/divinewallet.png?compact=true)](https://npmjs.org/package/divinewallet)
 
 Divine, a TUI (Textual User Interface) wallet for TurtleCoin.
 
