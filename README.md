@@ -15,27 +15,30 @@ https://github.com/turtlecoin/turtlecoin-wallet-nodejs
 
 ![walletscreen screenshot](https://raw.githubusercontent.com/turtlecoin/turtlecoin-wallet-nodejs/development/screenshots/walletscreen.png)
 
+
 ## Dependencies
 
 1. `nodejs`
 
 [nodejs installation instructions](https://nodejs.org/en/download/package-manager/)
 
-2. `git`
-
-3. `typescript` 
-
-`npm i -g typescript`
-
 ## Installation
 
-1. Install Divine globally with the `npm` package manager.
+1. Install Divine globally by running this command with nodeJS's included `npm` package manager.
 
 `npm i -g divinewallet`
 
 2. You can now run Divine from anywhere:
 
 `divine`
+
+## Development Dependencies
+
+1. `git`
+
+2. `typescript` 
+
+`npm i -g typescript`
 
 ## Development Setup
 
