@@ -1,7 +1,7 @@
 # Divine
 
 ### Master Build Status
-[![travis-master](https://api.travis-ci.org/turtlecoin/turtlecoin-wallet-nodejs.svg?branch=master)
+![travis-master](https://api.travis-ci.org/turtlecoin/turtlecoin-wallet-nodejs.svg?branch=master)
 
 ### Development Build Status
 
