@@ -1796,12 +1796,61 @@ function drawWalletWindow(fileName, password) {
         settingsNavButton.press();
     });
 
+
+    
+    // draw the windows
+    let notificationWindow = blessed.box({
+        top: '10%',
+        left: '0%',
+        width: '100%',
+        height: '100%',
+        tags: true,
+        style: {
+            fg: 'white',
+            bg: 'black',
+        }
+    });
+    
+    screen.append(notificationWindow);
+
+    // x keypress
+    notificationWindow.key(['x', 'escape'], function(ch, key) {
+        closeWalletButton.press();
+    });
+
+    notificationWindow.key(['C-c'], function(ch, key) {
+        addressButton.press();
+    });
+
+    // t keypress
+    notificationWindow.key(['t'], function(ch, key) {
+        transferNavButton.press();
+    });
+
+    // t keypress
+    notificationWindow.key(['s'], function(ch, key) {
+        settingsNavButton.press();
+    });
+
+    notificationWindow.hide();
+
+        // define notification text
+        let notificationQueue = blessed.text({
+            parent: notificationWindow,
+            top: 'center',
+            left: 'center',
+            tags: true,
+            fg: 'white',
+        })
+
     // append the elements
     walletWindow.focus();
     screen.append(navBar);
     screen.append(transferWindow);
     screen.append(settingsWindow);
     screen.append(walletWindow);
+
+
 
     ///////////////////////////////////////////////////////////////////
     // NAVIGATION BAR
@@ -1861,6 +1910,7 @@ function drawWalletWindow(fileName, password) {
     walletNavButton.on('press', function() {
         settingsWindow.hide();
         transferWindow.hide();
+        notificationWindow.hide();
         walletWindow.show();
         walletWindow.setFront();
         walletWindow.focus();
@@ -1893,6 +1943,7 @@ function drawWalletWindow(fileName, password) {
     transferNavButton.on('press', function() {
         walletWindow.hide();
         settingsWindow.hide();
+        notificationWindow.hide();
         transferWindow.show();
         transferWindow.setFront();
         addressInput.focus();
@@ -1925,6 +1976,7 @@ function drawWalletWindow(fileName, password) {
     settingsNavButton.on('press', function() {
         walletWindow.hide();
         transferWindow.hide();
+        notificationWindow.hide();
         settingsWindow.show();
         settingsWindow.setFront();
         settingsWindow.focus();
@@ -1938,6 +1990,39 @@ function drawWalletWindow(fileName, password) {
         left: '50%',
         tags: true,
         fg: 'white',
+    })
+
+    // define settings button
+    let notificationsNavButton = blessed.button({
+        parent: navBar,
+        mouse: true,
+        keys: true,
+        shrink: true,
+        padding: {
+            left: 0,
+            right: 0
+        },
+        left: 35,
+        top: '0%',
+        content: '(n)otifications',
+        style: {
+            bg: 'black',
+            fg: 'white',
+            hover: {
+                bg: 'red',
+                fg: 'white'
+            }
+        }
+    })
+
+    notificationsNavButton.on('press', function() {
+        walletWindow.hide();
+        transferWindow.hide();
+        settingsWindow.hide();
+        notificationWindow.show();
+        notificationWindow.setFront();
+        notificationWindow.focus();
+        screen.render();
     })
 
     ///////////////////////////////////////////////////////////////////
@@ -2220,6 +2305,8 @@ function drawWalletWindow(fileName, password) {
         screen.focusPop();
     })
 
+    let notifications = [];
+
     // transfer form post handling
     transferForm.on('submit', async function(data) {
         let paymentID;
@@ -2233,11 +2320,13 @@ function drawWalletWindow(fileName, password) {
             transferForm.reset();
         } else {
             transferWindow.hide();
-            walletWindow.show();
+            walletWindow.show();    
             walletWindow.setFront();
             walletWindow.focus();
+            await notifyUser(notificationText, `{white-fg}{bold}Sent succesfully!{/bold} ${hash}`, 3000);
+            notifications.push(`Sent successfully! tx hash: ${hash}`);
+            notificationQueue.setContent(JSON.stringify(notifications));
             screen.render();
-            await notifyUser(notificationText, `{white-fg}{bold}Sent succesfully!{/bold}`, 3000);
         } 
     });
 
