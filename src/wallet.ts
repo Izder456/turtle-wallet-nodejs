@@ -33,7 +33,7 @@ const daemon = new WB.BlockchainCacheApi('blockapi.turtlepay.io', true);
 // setup and configure screen instance
 let screen = blessed.screen({
     smartCSR: true,
-    title: 'Divine v0.2.5',
+    title: 'Divine v0.2.7',
     debug: true
 });
 
@@ -610,7 +610,7 @@ function drawOpenWindow(error?: any) {
 }
 
 // draw the import window
-function drawImportWindow(error?: any) { 
+function drawImportWindow(error?: any, form?: string) { 
 
     // draw the navbar
     let navBar = blessed.box({
@@ -633,8 +633,71 @@ function drawImportWindow(error?: any) {
         errorText.setContent(error.toString());
     }
 
+    // define transfers button
+    let keyNavButton = blessed.button({
+        parent: navBar,
+        mouse: true,
+        keys: true,
+        shrink: true,
+        padding: {
+            left: 0,
+            right: 0
+        },
+        left: 11,
+        top: '0%',
+        content: '(k)eys',
+        style: {
+            bg: 'black',
+            fg: 'white',
+            hover: {
+                bg: 'red',
+                fg: 'white'
+            }
+        }
+    })
+
+    keyNavButton.on('press', function() {
+        importWindow.hide();
+        keyWindow.show();
+        keyWindow.setFront();
+        keyWindow.focus();
+        screen.render();
+    })
+
+    // define transfers button
+    let seedNavButton = blessed.button({
+        parent: navBar,
+        mouse: true,
+        keys: true,
+        shrink: true,
+        padding: {
+            left: 0,
+            right: 0
+        },
+        left: 0,
+        top: '0%',
+        content: '(s)eed',
+        style: {
+            bg: 'black',
+            fg: 'white',
+            hover: {
+                bg: 'red',
+                fg: 'white'
+            }
+        }
+    })
+
+    seedNavButton.on('press', function() {
+        keyWindow.hide();
+        importWindow.show();
+        importWindow.setFront();
+        walletSeed.focus();
+        screen.render();
+    })
+
     // draw the window
-    let importWindow = blessed.box({
+    let keyWindow = blessed.box({
+        parent: screen,
         top: '10%',
         left: '0%',
         width: '100%',
@@ -645,8 +708,342 @@ function drawImportWindow(error?: any) {
         }
     });
 
-    // focus the window
-    importWindow.focus();
+    keyWindow.hide();
+
+    // pop focus on click
+    keyWindow.on('click', function() {
+        screen.focusPop();
+        keyWindow.focus();
+    });
+
+    keyWindow.key(['tab'], function() {
+        fileName.focus();
+    });
+
+    // enter keypress
+    keyWindow.key(['enter'], function(ch, key) {
+        keyWalletButton.press();
+    });
+
+    // s keypress
+    keyWindow.key(['s'], function(ch, key) {
+        seedNavButton.press();
+    });
+
+    // exit
+    keyWindow.key(['x', 'escape'], function(ch, key) {
+        closeWalletButton.press();
+    });
+
+    // exit
+    keyWindow.key(['tab'], function(ch, key) {
+        spendKey.focus();
+    });
+
+    // define "open wallet" info form
+    let keyForm = blessed.form({
+        parent: keyWindow,
+        keys: true,
+        left: 'center',
+        top: -1,
+        width: 42,
+        height: 23,
+        bg: 'black',
+        fg: 'red',
+        border: {
+            type: 'line',
+            fg: 'white'
+        }
+    });
+
+    // open form post handling
+    keyForm.on('submit', function(data) {
+        const error = importKeyWallet(data.filename, data.password, data.spendKey, data.viewKey, parseInt(data.scanheight))
+        if (error) {
+            drawImportWindow(error, 'key');
+        }
+    });
+
+    let keyFormLabel = blessed.text({
+        parent: keyForm,
+        top: -1,
+        left: 'center',
+        fg: 'white',
+        content: 'Import A Wallet'
+    })
+
+    // define filename textbox label
+    let spendKeyLabel = blessed.text({
+        parent: keyForm,
+        keys: true,
+        top: 0,
+        left: 0,
+        fg: 'white',
+        content: 'Private Spend Key:'
+    });
+
+    // define filename textbox
+    let spendKey = blessed.textbox({
+        parent: keyForm,
+        name: 'spendKey',
+        mouse: true,
+        keys: true,
+        vi: false,
+        top: 1,
+        left: 0,
+        width: 40,
+        height: 3,
+        inputOnFocus: true,
+        content: 'first',
+        border: {
+            type: 'line',
+            fg: 'white'
+        },
+        fg: 'white',
+    });
+
+    // define filename textbox label
+    let viewKeyLabel = blessed.text({
+        parent: keyForm,
+        keys: true,
+        top: 4,
+        left: 0,
+        fg: 'white',
+        content: 'Private View Key:'
+    });
+
+    // define filename textbox
+    let viewKey = blessed.textbox({
+        parent: keyForm,
+        name: 'viewKey',
+        mouse: true,
+        keys: true,
+        vi: false,
+        top: 5,
+        left: 0,
+        width: 40,
+        height: 3,
+        inputOnFocus: true,
+        content: 'first',
+        border: {
+            type: 'line',
+            fg: 'white'
+        },
+        fg: 'white',
+    });
+
+    // enter keypress
+    spendKey.key(['enter'], function(ch, key) {
+        keyWalletButton.press();
+    })
+
+    spendKey.key(['escape'], function() {
+        keyWindow.focus();
+    })
+
+    spendKey.on('blur', function() {
+        keyWindow.focus();
+    })
+
+    // pop focus on textbox click
+    spendKey.on('click', function() {
+        screen.focusPop();
+    });
+
+    // define filename textbox label
+    let keyFilenameLabel = blessed.text({
+        parent: keyForm,
+        keys: true,
+        top: 8,
+        left: 0,
+        fg: 'white',
+        content: 'Filename:'
+    });
+
+    // define filename textbox
+    let keyFileName = blessed.textbox({
+        parent: keyForm,
+        name: 'filename',
+        mouse: true,
+        keys: true,
+        vi: false,
+        top: 9,
+        left: 0,
+        width: 40,
+        inputOnFocus: true,
+        height: 3,
+        content: 'first',
+        border: {
+            type: 'line',
+            fg: 'white'
+        },
+        fg: 'white',
+    });
+
+    // enter keypress
+    keyFileName.key(['enter'], function(ch, key) {
+        keyWalletButton.press();
+    })
+
+    keyFileName.key(['escape'], function() {
+        keyWindow.focus();
+    })
+
+    keyFileName.on('blur', function() {
+        keyWindow.focus();
+    })
+
+    // pop focus on textbox click
+    keyFileName.on('click', function() {
+        screen.focusPop();
+    });
+
+
+    // define password textbox label
+    let keyPasswordLabel = blessed.text({
+        parent: keyForm,
+        top: 12,
+        left: 0,
+        fg: 'white',
+        content: 'Password:'
+    });
+
+    // defind password textbox
+    let keyPassword = blessed.textbox({
+        parent: keyForm,
+        name: 'password',
+        mouse: true,
+        keys: true,
+        vi: false,
+        top: 13,
+        left: 0,
+        width: 40,
+        inputOnFocus: true,
+        censor: true,
+        height: 3,
+        content: 'first',
+        border: {
+            type: 'line',
+            fg: 'white'
+        },
+        fg: 'white',
+    });
+
+    // enter keypress
+    keyPassword.key(['enter'], function(ch, key) {
+        keyWalletButton.press();
+    })
+
+    keyPassword.key(['escape'], function() {
+        keyWindow.focus();
+    })
+
+    keyPassword.on('blur', function() {
+        keyWindow.focus();
+    })
+
+    // pop focus on textbox click
+    keyPassword.on('click', function() {
+        screen.focusPop();
+    });
+
+    // define filename textbox label
+    let keyScanHeightLabel = blessed.text({
+        parent: keyForm,
+        keys: true,
+        top: 16,
+        left: 0,
+        tags: true,
+        fg: 'white',
+        content: 'Scan Height: (optional)'
+    });
+
+    // define filename textbox
+    let keyScanHeight = blessed.textbox({
+        parent: keyForm,
+        name: 'scanheight',
+        mouse: true,
+        keys: true,
+        vi: false,
+        top: 17,
+        left: 0,
+        width: 40,
+        inputOnFocus: true,
+        height: 3,
+        content: 'first',
+        border: {
+            type: 'line',
+            fg: 'white'
+        },
+        fg: 'white',
+    });
+
+    // enter keypress
+    keyScanHeight.key(['enter'], function(ch, key) {
+        keyWalletButton.press();
+    })
+
+    keyScanHeight.key(['escape'], function() {
+        keyWindow.focus();
+    })
+
+    keyScanHeight.key(['tab'], function() {
+        screen.focusPop();
+        keyWindow.focus();
+    })
+
+    keyScanHeight.on('blur', function() {
+        keyWindow.focus();
+    })
+
+    // pop focus on textbox click
+    keyScanHeight.on('click', function() {
+        screen.focusPop();
+    });
+
+    // define submit button
+    let keyWalletButton = blessed.button({
+        parent: keyForm,
+        mouse: true,
+        shrink: true,
+        padding: {
+            left: 10,
+            right: 11
+        },
+        left: 0,
+        top: 20,
+        content: 'open wallet (enter)',
+        style: {
+            bg: 'black',
+            fg: 'white',
+            hover: {
+                bg: 'red'
+            }
+        }
+    });
+
+    // on submit button press
+    keyWalletButton.on('press', function() {
+        screen.focusPop();
+        keyForm.submit();
+        keyWindow.destroy();
+        importWindow.destroy();
+        navBar.destroy();
+    });
+
+
+    // draw the window
+    let importWindow = blessed.box({
+        parent: screen,
+        top: '10%',
+        left: '0%',
+        width: '100%',
+        height: '100%',
+        style: {
+            fg: 'white',
+            bg: 'black',
+        }
+    });
 
     // pop focus on click
     importWindow.on('click', function() {
@@ -663,6 +1060,11 @@ function drawImportWindow(error?: any) {
         importWalletButton.press();
     });
 
+    // t keypress
+    importWindow.key(['k'], function(ch, key) {
+        keyNavButton.press();
+    });
+
     // exit
     importWindow.key(['x', 'escape'], function(ch, key) {
         closeWalletButton.press();
@@ -670,6 +1072,7 @@ function drawImportWindow(error?: any) {
 
     // append the elements to the screen
     screen.append(importWindow);
+    screen.append(keyWindow);
     screen.append(navBar);
 
     //  define close wallet button
@@ -717,7 +1120,7 @@ function drawImportWindow(error?: any) {
     importForm.on('submit', function(data) {
         const error = importWallet(data.filename, data.password, data.seed, parseInt(data.scanheight));
         if (error) {
-            drawImportWindow(error);
+            drawImportWindow(error, 'seed');
         }
     });
 
@@ -957,8 +1360,20 @@ function drawImportWindow(error?: any) {
         navBar.destroy();
     });
 
+    // focus the window
+    if (form === 'seed' || form === undefined) {
+        importWindow.setFront();
+        importWindow.focus();
+        walletSeed.focus();
+    }
+
+    if (form === 'key') {
+        importWindow.hide();
+        keyWindow.show();
+        keyWindow.focus();
+    }
+
     // render the screen
-    walletSeed.focus();
     screen.render();
 
 }
@@ -2063,6 +2478,20 @@ function importWallet(fileName: string, password: string, seed: string, startHei
         return `${fileName}.wallet already exists, will not overwrite.`;
     };
     const [wallet, error] = WB.WalletBackend.importWalletFromSeed(daemon, startHeight, seed);
+    if (error) {
+        return error;
+    }
+    wallet.saveWalletToFile(walletDirectory + `/${fileName}.wallet`, password);
+    wallet.stop();
+    drawWalletWindow(fileName, password);
+};
+
+// imports a wallet by keys and launch it
+function importKeyWallet(fileName: string, password: string, spendKey: string, viewKey: string, startHeight: number) {
+    if (fs.existsSync(walletDirectory + `/${fileName}.wallet`)) {
+        return `${fileName}.wallet already exists, will not overwrite.`;
+    };
+    const [wallet, error] = WB.WalletBackend.importWalletFromKeys(daemon, startHeight, viewKey, spendKey);
     if (error) {
         return error;
     }
